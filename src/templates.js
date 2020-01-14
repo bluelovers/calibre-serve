@@ -34,7 +34,7 @@ function renderSeriesLink(series,root){
 
 function renderSeriesLinks(series,root){
 	if(!series.length){return '';}
-	return `<span class="seriesLinks">Part of: ${series.map(series=>renderSeriesLink(series,root)).join('')}</span>`;	
+	return `<span class="seriesLinks">Part of: ${series.map(series=>renderSeriesLink(series,root)).join('')}</span>`;
 }
 
 function renderDate(date){
@@ -64,7 +64,7 @@ function renderFiles(files,book_path,book_id,dbName,options){
 
 function renderBook(book,summary=true,dbName,options,level=3){
 	const mountPoint = (options.mountPoint || '/')+`${dbName}/`;
-	const 
+	const
 		{ book_title
 		, book_id
 		, book_path
@@ -76,9 +76,9 @@ function renderBook(book,summary=true,dbName,options,level=3){
 		, comment
 		, data
 	} = book;
-	
+
 	const shouldRenderFiles = (
-		!summary && 
+		!summary &&
 		(!options.doAuthenticate || options.authenticated)
 	)
 
@@ -163,7 +163,7 @@ function renderTagsCloud(rows,dbName,options){
 }
 
 function tagPage(rows,argument,command,dbName,options){
-	const content = (!argument) ? 
+	const content = (!argument) ?
 		renderTagsCloud(rows,dbName,options):
 		renderTags(rows,dbName,options)
 	;
@@ -195,11 +195,11 @@ function renderSeriesCloud(rows,dbName,options){
 }
 
 function seriesPage(rows,argument,command,dbName,options){
-	const content = (!argument) ? 
+	const content = (!argument) ?
 		renderSeriesCloud(rows,dbName,options):
 		renderSeries(rows,dbName,options)
 	;
-	return `<div class="seriesPage"><h1>Series</h1>${content}</div>`	
+	return `<div class="seriesPage"><h1>Series</h1>${content}</div>`
 }
 
 
@@ -228,15 +228,20 @@ function renderAuthorsCloud(rows,dbName,options){
 }
 
 function authorsPage(rows,argument,command,dbName,options){
-	const content = (!argument) ? 
+	const content = (!argument) ?
 		renderAuthorsCloud(rows,dbName,options):
 		renderAuthors(rows,dbName,options)
 	;
-	return `<div class="authorsPage"><h1>Authors</h1>${content}</div>`	
+	return `<div class="authorsPage"><h1>Authors</h1>${content}</div>`
 }
 
 function defaultTemplate(rows,argument,command,dbName,options){
 	const text = JSON.stringify(rows)+'::::'+argument+'::::'+command;
+	return text;
+}
+
+function defaultTemplateRaw(rows,argument,command,dbName,options){
+	const text = rows;
 	return text;
 }
 
@@ -320,11 +325,20 @@ ga('send', 'pageview');
 </script>`
 }
 
+function rawPage(fn)
+{
+	return function render(rows,argument,command,dbName,options){
+		const title = options && options.title || 'Calibre Server';
+
+		return fn(rows,argument,command,dbName,options)
+	}
+}
+
 function page(fn){
 	return function render(rows,argument,command,dbName,options){
 		const title = options && options.title || 'Calibre Server';
 		const menu = menuBar(dbName,command,argument,options)
-		const footer = renderFooter(options); 
+		const footer = renderFooter(options);
 		const ga = renderGoogleAnalytics(options)
 		return `<!DOCTYPE html>
 <html class="nojs"><head><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
@@ -425,7 +439,7 @@ function menuBar(dbName,command,argument,options){
 	const commandsLinks = dbName ? commands.map((name)=>`<a class="commandLink ${name==command?'selected':''}" href="${mountPoint}${dbName}/${name}"><span>${name.replace(/s$/,'')}s</span></a>`).join('') : '';
 	const commandsMenu = commandsLinks ? `<div class="nav-inside nav-commands">${commandsLinks}</div>` : '';
 	const search = searchBar(dbName,command,argument,options);
-	return `<div class="nav">${dbsMenu}${commandsMenu}${search}</div>`;	
+	return `<div class="nav">${dbsMenu}${commandsMenu}${search}</div>`;
 }
 
 function hexToRgb(hex) {
@@ -719,12 +733,14 @@ function style(){
 </style>`
 }
 
-module.exports = 
+module.exports =
 	{ default:page(defaultTemplate)
 	, list:page(listPage)
 	, book:page(bookPage)
 	, author:page(authorsPage)
 	, tag:page(tagPage)
 	, series:page(seriesPage)
-	, error:page(error)
+	, error:page(error),
+		opds: rawPage(defaultTemplateRaw),
+		listopds: rawPage(defaultTemplateRaw),
 	};

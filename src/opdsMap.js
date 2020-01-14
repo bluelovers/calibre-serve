@@ -5,9 +5,9 @@ const author = (static,dbName,{author_name,author_id,books})=>(
 	}
 )
 
-const links = (static,dbName,{book_path},{data_format,data_name})=>(
+const links = (static,dbName,{book_path},{data_format,data_name}, options)=>(
 	{ rel:'acquisition'
-	, href:`${static}${dbName}/${book_path}/${data_name}.${data_format.toLowerCase()}`
+	, href:`${static}${encodeURIComponent(dbName)}/${encodeURI(book_path)}/${encodeURIComponent(data_name.replace(/'/g,'\\\''))}.${data_format.toLowerCase()}`
 	, type:`application/${data_format.toLowerCase()}+zip`
 	}
 )
@@ -20,27 +20,27 @@ const cover = (static,dbName,{book_path}) => (
 )
 
 const book_link = (static,dbName,{book_id,book_title}) =>(
-	{ href:`${static}${dbName}/books/${book_id}`
+	{ href:`${static}/${dbName}/books/${book_id}`
 	, type:'application/atom+xml;type=entry;profile=opds-catalog'
 	, title:book_title
 	})
 
-const book = (static,dbName,{book_id,book_title,comment,book_path,authors,data})=>(
-		{ title:book_title
-		, content: comment ? 
+const book = (static,dbName,{book_id,book_title,comment,book_path,authors,data},...argv)=>{
+		return { title:book_title
+		, content: comment ?
 			{ type:'raw'
 			, value:`<![CDATA[${comment}]]>`
 			} : null
-		, authors:authors && authors.map(a=>author(static,dbName,a))		
+		, authors:authors && authors.map(a=>author(static,dbName,a))
 		, links:data && data
-			.map(link=>links(static,dbName,{book_path},link))
+			.map(link=>links(static + 'covers/',dbName,{book_path},link))
 			.concat(
 				[ cover(static,dbName,{book_path})
 				, book_link(static,dbName,{book_id,book_title})
 				]
 			)
 		}
-	)
+}
 
 
 const rootLink = (static,rel) => (
@@ -68,8 +68,8 @@ const manager = (static,{databases}) => (
 	{ links:[rootLink(static,'self'),rootLink(static,'start')]
 	, books:databases
 		.map(db=>databaseChunk(static,db))
-	}	
-) 
+	}
+)
 
 const series = (static,dbName,{series_name,series_id,books}) => (
 	{ title:series_name
@@ -79,7 +79,7 @@ const series = (static,dbName,{series_name,series_id,books}) => (
 	}
 )
 
-const databaseLinks = (static,{name:dbName}) => 
+const databaseLinks = (static,{name:dbName}) =>
 	[ navigation(static,dbName,'book','Books')
 	, navigation(static,dbName,'author','Authors')
 	, navigation(static,dbName,'tag','Tags')
@@ -107,12 +107,12 @@ const page = (title,author,obj) => {
 }
 
 const root = (static,obj) => (
-	obj.type == 'manager' ? 
+	obj.type == 'manager' ?
 		manager(static,obj) :
 		database(static,obj)
 )
 
-module.exports = 
+module.exports =
 	{ author
 	, book
 	, cover

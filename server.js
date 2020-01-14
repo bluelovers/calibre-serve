@@ -44,7 +44,7 @@ function startServer(root,title='Calibre Server',port=3000,tokens=false,footer='
 		, tokens
 		, /\.jpe?g$/
 		)
-		
+
 	connect(
 		{ root
 		, databases
@@ -76,7 +76,7 @@ function startServer(root,title='Calibre Server',port=3000,tokens=false,footer='
 			}
 			app.use(errorLog);
 			app.use(requestHandler.errorHandler);
-			app.listen(3000,function(){
+			app.listen(port,function(){
 				verbose && console.log(`${title} listening on ${port}`);
 			})
 		}

@@ -101,7 +101,7 @@ class Manager{
 	toOPDS(dbName,id,type,results){
 		const {_url_base,_title,_author} = this;
 		const transformed = results.map(item=>opdsMap.series(_url_base,dbName,item));
-		const xml = typeof id !== 'undefined' && transformed.length == 1 ? 
+		const xml = typeof id !== 'undefined' && transformed.length == 1 ?
 			opdsMap.page(dbName,_author,transformed[0]) :
 			opdsMap.page(dbName,_author,{books:transformed});
 		return opds.create(xml);
@@ -146,7 +146,7 @@ class Manager{
 		if(!this.isValidCommand(command)){
 			return Promise.reject(new Error(`\`${command}\` is not a valid command`));
 		}
-		const commandName = opds ? `${command}OPDS` : command; 
+		const commandName = opds ? `${command}OPDS` : command;
 		const method = commandsMap[commandName];
 		const argument = args.join('/');
 		return this[method](dbName,argument);
@@ -173,7 +173,7 @@ class Manager{
 		return this.getList(dbName).then(function(db){
 			return opds.create(
 				opdsMap.page(_title,_author,opdsMap.root(_url_base,db))
-			); 
+			);
 		})
 	}
 }

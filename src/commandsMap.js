@@ -1,5 +1,6 @@
 module.exports = {
-	book:'getBook'
+	book:'getBook',
+	opds:'getBookOPDS'
 ,	tag:'getTag'
 ,	series:'getSeries'
 ,	author:'getAuthor'

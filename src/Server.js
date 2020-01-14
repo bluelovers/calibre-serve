@@ -54,16 +54,16 @@ class Server extends Manager{
 		function errorHandler(err,req,res,next){
 			self.error(req,res,templates,null,null,null,err,options);
 		}
-		function requestHandler(req,res,next){		
+		function requestHandler(req,res,next){
 
 			if(!self._ready){
 				throw new Error('calling a request handler before the server is ready');
 			}
-			
+
 			const url = URL.parse(req.url).pathname.replace(/^\/+|\/+$/,'');
-			
+
 			let [dbName,command,...args] = url.split('/');
-			if(req.query.dbName){dbName = req.query.dbName;}
+			if(req.query.dbName){dbName = decodeURIComponent(req.query.dbName);}
 			if(req.query.command){command = req.query.command;}
 			if(req.query.search){args = [req.query.search];}
 
@@ -72,6 +72,11 @@ class Server extends Manager{
 			if(dbName == 'list'){
 				command = 'list';
 				dbName = null;
+			}
+
+			if (command === 'opds' || command === 'listopds')
+			{
+				res.setHeader('Content-Type', 'application/xml');
 			}
 
 			const argument = args && args[0] && decodeURIComponent(args.join('/')) || null;
@@ -93,7 +98,7 @@ class Server extends Manager{
 				}
 				return err;
 			}
-			
+
 			function onSuccess(rows){
 				self.render(req,res,templates,dbName,command,argument,rows,options);
 				return rows;
